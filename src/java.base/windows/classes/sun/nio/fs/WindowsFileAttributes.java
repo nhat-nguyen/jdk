@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -356,16 +356,34 @@ class WindowsFileAttributes
     }
 
     /**
+     * Returns true if the attributes' values are safe to be used for same file
+     * comparison. WebDAV network drives return 0 for volSerialNumber,
+     * fileIndexLow, and fileIndexHigh, so it is not reliable to use these
+     * values to compare files.
+     */
+    static boolean safeForSameFileComparison(WindowsFileAttributes attrs) {
+        return attrs.volSerialNumber != 0;
+    }
+
+    /**
      * Returns true if the attributes are of the same file - both files must
      * be open.
+     * In case the attributes are not reliable to be used for same file
+     * comparison, try comparing using the the files' paths. Whether or not
+     * the paths are expanded depends on how their handles were created.
      */
-    static boolean isSameFile(WindowsFileAttributes attrs1,
-                              WindowsFileAttributes attrs2)
-    {
-        // volume serial number and file index must be the same
-        return (attrs1.volSerialNumber == attrs2.volSerialNumber) &&
-               (attrs1.fileIndexHigh == attrs2.fileIndexHigh) &&
-               (attrs1.fileIndexLow == attrs2.fileIndexLow);
+    static boolean isSameFile(long handle1, WindowsFileAttributes attrs1,
+                              long handle2, WindowsFileAttributes attrs2) throws WindowsException {
+        if (safeForSameFileComparison(attrs1) && safeForSameFileComparison(attrs2)) {
+            // volume serial number and file index must be the same
+            return (attrs1.volSerialNumber == attrs2.volSerialNumber) &&
+                    (attrs1.fileIndexHigh == attrs2.fileIndexHigh) &&
+                    (attrs1.fileIndexLow == attrs2.fileIndexLow);
+        }
+
+        String path1 = GetFinalPathNameByHandle(handle1);
+        String path2 = GetFinalPathNameByHandle(handle2);
+        return path1.equalsIgnoreCase(path2);
     }
 
     /**

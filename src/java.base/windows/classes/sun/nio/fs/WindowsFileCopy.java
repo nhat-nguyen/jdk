@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -113,7 +113,8 @@ class WindowsFileCopy {
                     targetAttrs = WindowsFileAttributes.readAttributes(targetHandle);
 
                     // if both files are the same then nothing to do
-                    if (WindowsFileAttributes.isSameFile(sourceAttrs, targetAttrs)) {
+                    if (WindowsFileAttributes.isSameFile(
+                        sourceHandle, sourceAttrs, targetHandle, targetAttrs)) {
                         return;
                     }
 
@@ -341,7 +342,8 @@ class WindowsFileCopy {
                     targetAttrs = WindowsFileAttributes.readAttributes(targetHandle);
 
                     // if both files are the same then nothing to do
-                    if (WindowsFileAttributes.isSameFile(sourceAttrs, targetAttrs)) {
+                    if (WindowsFileAttributes.isSameFile(
+                        sourceHandle, sourceAttrs, targetHandle, targetAttrs)) {
                         return;
                     }
 

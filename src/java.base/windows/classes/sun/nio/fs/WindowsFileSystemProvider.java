@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -32,7 +32,7 @@ import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.io.*;
 import java.util.*;
-import java.security.AccessController;
+
 import jdk.internal.misc.Unsafe;
 import jdk.internal.util.StaticProperty;
 import sun.nio.ch.ThreadPool;
@@ -451,7 +451,16 @@ class WindowsFileSystemProvider
                 } catch (WindowsException x) {
                     x.rethrowAsIOException(file2);
                 }
-                return WindowsFileAttributes.isSameFile(attrs1, attrs2);
+                // dummy variable for the return statement at the end
+                // since javac does not recognize that rethrowAsIOException
+                // always throws
+                boolean isSame = false;
+                try {
+                    isSame = WindowsFileAttributes.isSameFile(h1, attrs1, h2, attrs2);
+                } catch (WindowsException x) {
+                   x.rethrowAsIOException(file1, file2);
+                }
+                return isSame;
             } finally {
                 CloseHandle(h2);
             }

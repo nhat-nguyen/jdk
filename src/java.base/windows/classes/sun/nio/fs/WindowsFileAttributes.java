@@ -37,7 +37,7 @@ import static sun.nio.fs.WindowsConstants.*;
  * Windows implementation of DosFileAttributes/BasicFileAttributes
  */
 
-class FileIdEx {
+class FileId {
     private static final Unsafe unsafe = Unsafe.getUnsafe();
 
     /*
@@ -55,21 +55,31 @@ class FileIdEx {
     private static final short OFFSETOF_FILE_ID_INFO_FILEID              = 8;
 
     private final long volSerialNumber;
-    private final long fileIndexLow;
-    private final long fileIndexHigh;
+    private final byte[] fileId;
 
-    private static FileIdEx fromFileId(long address) {
-        int fileAttrs = unsafe.getInt(address + OFFSETOF_FILE_ID_INFO_VOLSERIALNUM);
-        long creationTime = unsafe.getLong(address + OFFSETOF_FILE_ID_INFO_FILEID);
-        return new WindowsFileAttributes(fileAttrs,
-                creationTime,
-                lastAccessTime,
-                lastWriteTime,
-                size,
-                reparseTag,
-                volSerialNumber,
-                fileIndexHigh,
-                fileIndexLow);
+    private FileId(long volSerialNumber, byte[] fileId) {
+        this.volSerialNumber = volSerialNumber;
+        this.fileId = fileId;
+    }
+
+    static FileId readFileIdInfo(long handle) throws WindowsException {
+        NativeBuffer buffer = NativeBuffers.getNativeBuffer(SIZEOF_FILE_ID_INFO);
+        try {
+            long address = buffer.address();
+            GetFileInformationByHandleEx_FileIdInfo(handle, address);
+            return fromFileId(address);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    private static FileId fromFileId(long address) {
+        long volSerialNumber = unsafe.getLong(address + OFFSETOF_FILE_ID_INFO_VOLSERIALNUM);
+        byte[] fieldId = new byte[16];
+        for (int offset = 0; offset < 16; offset++) {
+            fieldId[offset] = unsafe.getByte(address, OFFSETOF_FILE_ID_INFO_FILEID + offset);
+        }
+        return new FileId(volSerialNumber, fieldId);
     }
 }
 

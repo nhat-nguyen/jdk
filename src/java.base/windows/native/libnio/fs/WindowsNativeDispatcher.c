@@ -430,6 +430,20 @@ Java_sun_nio_fs_WindowsNativeDispatcher_GetFileInformationByHandle(JNIEnv* env, 
 
 
 JNIEXPORT void JNICALL
+Java_sun_nio_fs_WindowsNativeDispatcher_GetFileInformationByHandleEx_FileIdInfo(JNIEnv* env, jclass this,
+    jlong handle, jlong address)
+{
+    HANDLE h = (HANDLE)jlong_to_ptr(handle);
+    void* info = (void *) jlong_to_ptr(address);
+    if (GetFileInformationByHandleEx(h, FILE_INFO_BY_HANDLE_CLASS::FileIdInfo,
+        info, sizeof(FILE_ID_INFO)) == 0)
+    {
+        throwWindowsException(env, GetLastError());
+    }
+}
+
+
+JNIEXPORT void JNICALL
 Java_sun_nio_fs_WindowsNativeDispatcher_CopyFileEx0(JNIEnv* env, jclass this,
     jlong existingAddress, jlong newAddress, jint flags, jlong cancelAddress)
 {

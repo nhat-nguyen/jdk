@@ -292,7 +292,7 @@ class WindowsNativeDispatcher {
      *   DWORD                     dwBufferSize
      * )
      */
-    static native void GetFileInformationByHandleEx(long handle, long address)
+    static native void GetFileInformationByHandleEx_FileIdInfo(long handle, long address)
         throws WindowsException;
 
     /**

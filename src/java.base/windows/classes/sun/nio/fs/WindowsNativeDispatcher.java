@@ -285,6 +285,17 @@ class WindowsNativeDispatcher {
         throws WindowsException;
 
     /**
+     * GetFileInformationByHandleEx(
+     *   HANDLE                    hFile,
+     *   FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
+     *   LPVOID                    lpFileInformation,
+     *   DWORD                     dwBufferSize
+     * )
+     */
+    static native void GetFileInformationByHandleEx(long handle, long address)
+        throws WindowsException;
+
+    /**
      * CopyFileEx(
      *   LPCWSTR lpExistingFileName
      *   LPCWSTR lpNewFileName,

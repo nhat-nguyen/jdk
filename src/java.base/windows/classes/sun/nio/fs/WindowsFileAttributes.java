@@ -37,6 +37,42 @@ import static sun.nio.fs.WindowsConstants.*;
  * Windows implementation of DosFileAttributes/BasicFileAttributes
  */
 
+class FileIdEx {
+    private static final Unsafe unsafe = Unsafe.getUnsafe();
+
+    /*
+     * typedef struct _FILE_ID_INFO {
+     *     ULONGLONG VolumeSerialNumber;
+     *     FILE_ID_128 FileId;
+     * } FILE_ID_INFO;
+     *
+     * typedef struct _FILE_ID_128 {
+     *     BYTE  Identifier[16];
+     * } FILE_ID_128;
+     */
+    private static final short SIZEOF_FILE_ID_INFO                       = 24;
+    private static final short OFFSETOF_FILE_ID_INFO_VOLSERIALNUM        = 0;
+    private static final short OFFSETOF_FILE_ID_INFO_FILEID              = 8;
+
+    private final long volSerialNumber;
+    private final long fileIndexLow;
+    private final long fileIndexHigh;
+
+    private static FileIdEx fromFileId(long address) {
+        int fileAttrs = unsafe.getInt(address + OFFSETOF_FILE_ID_INFO_VOLSERIALNUM);
+        long creationTime = unsafe.getLong(address + OFFSETOF_FILE_ID_INFO_FILEID);
+        return new WindowsFileAttributes(fileAttrs,
+                creationTime,
+                lastAccessTime,
+                lastWriteTime,
+                size,
+                reparseTag,
+                volSerialNumber,
+                fileIndexHigh,
+                fileIndexLow);
+    }
+}
+
 class WindowsFileAttributes
     implements DosFileAttributes
 {

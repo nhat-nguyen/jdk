@@ -360,9 +360,32 @@ class WindowsFileAttributes
      * comparison. WebDAV network drives return 0 for volSerialNumber,
      * fileIndexLow, and fileIndexHigh, so it is not reliable to use these
      * values to compare files.
+     *
+     * Reference:
+     *
+     * Excerpt from https://docs.microsoft.com/en-us/windows/win32/api/fileapi/ns-fileapi-by_handle_file_information:
+     *
+     * The identifier (low and high parts) and the volume serial number uniquely
+     * identify a file on a single computer. To determine whether two open handles
+     * represent the same file, combine the identifier and the volume serial number
+     * for each file and compare them.
+     *
+     *
+     * Excerpt from https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/2d3333fe-fc98-4a6f-98a2-4bb805aff407:
+     *
+     * 64-bit file ID
+     * A 64-bit value that uniquely identifies a file within a given volume.
+     * This identifier is generated and stored by the file system. The identifier
+     * SHOULD<10> be unique to the volume and stable until the file is deleted.
+     *
+     * For file systems that do not support a 64-bit file ID, this field MUST
+     * be set to 0, and MUST be ignored.
+     * For files for which a unique 64-bit file ID cannot be established, this
+     * field MUST be set to 0xffffffffffffffff, and MUST be ignored.
      */
     static boolean safeForSameFileComparison(WindowsFileAttributes attrs) {
-        return attrs.volSerialNumber != 0;
+        long fileIndex = ((long) attrs.fileIndexHigh << 32) + attrs.fileIndexLow;
+        return fileIndex != 0 && fileIndex != 0xffffffffffffffffL;
     }
 
     /**

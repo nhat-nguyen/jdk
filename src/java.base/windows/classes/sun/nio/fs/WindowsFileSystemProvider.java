@@ -412,8 +412,8 @@ class WindowsFileSystemProvider
     @Override
     public boolean isSameFile(Path obj1, Path obj2) throws IOException {
         WindowsPath file1 = WindowsPath.toWindowsPath(obj1);
-        if (file1.equals(obj2))
-            return true;
+//        if (file1.equals(obj2))
+//            return true;
         if (obj2 == null)
             throw new NullPointerException();
         if (!(obj2 instanceof WindowsPath))
@@ -448,6 +448,7 @@ class WindowsFileSystemProvider
                 WindowsFileAttributes attrs2 = null;
                 try {
                     attrs2 = WindowsFileAttributes.readAttributes(h2);
+                    FileId fileId2 = FileId.readFileIdInfo(h2);
                 } catch (WindowsException x) {
                     x.rethrowAsIOException(file2);
                 }
